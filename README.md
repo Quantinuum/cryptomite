@@ -11,9 +11,9 @@
 
 `cryptomite` is a modular, extensible high-level Python library 
 of randomness extractors, created by Quantinuum's Quantum Cryptography team. 
-At a high level, the library offers state-of-the-art randomness extractors that are easy to use, optimized for performance and numerically precise
-providing a trade-off of features that suit numerous practical use cases. Find more information in our accompanying [paper](https://quantum-journal.org/papers/q-2025-01-08-1584/).
-For additional examples of usage and guidance on getting started with Cryptomite, see our related [blog post](https://medium.com/quantinuum/introducing-cryptomite-randomness-extraction-simplified-857fc2f87673)
+At a high level, the library offers state-of-the-art randomness extractors that are easy to use, optimized for performance and numerically precise, 
+making it suitable for numerous practical use cases. . More details can be found in our accompanying [paper](https://quantum-journal.org/papers/q-2025-01-08-1584/).
+For usage examples and guidance on getting started, see our related [blog post](https://medium.com/quantinuum/introducing-cryptomite-randomness-extraction-simplified-857fc2f87673)
 and repository [documentation](https://cqcl.github.io/cryptomite/).
 
 
