@@ -6,16 +6,118 @@ from __future__ import annotations
 from math import sqrt
 from typing import Literal, Sequence
 
+# For the CompactBoolList
+from typing import overload
+
 from cryptomite._cryptomite import BigNTT, NTT
 
 __all__ = ['is_prime', 'prime_facto', 'previous_prime', 'next_prime',
            'closest_prime', 'previous_na_set', 'next_na_set',
-           'closest_na_set', 'suggest_extractor', 'von_neumann']
+           'closest_na_set', 'suggest_extractor', 'von_neumann',
+
+           'CompactBoolList'
+           ]
 
 
 BitT = Literal[0, 1]
 BitsT = Sequence[BitT]
 
+class CompactBoolList:
+    """
+    A compact list of booleans using bit-level storage, 
+    designed to interface with functions expecting list[bool].
+    """
+
+    ############ Python native methods ##############
+    def __init__(self, iterable: BitsT|Sequence[bool]|Sequence|None= None):
+        self._data = bytearray()
+        self._length = 0
+        self._index: int = 0
+
+        if iterable is not None:
+            for item in iterable:
+                self.append(item)
+
+    def __len__(self):
+        return self._length
+
+    def _get_byte_and_bit_index(self, index: int) -> tuple[int, int]:
+        """ Helper functions for getter """ 
+        
+        # Handle negative indexing for convenience
+        if index < 0:
+            index += self._length
+        
+        byte_index = index // 8
+        bit_index = index % 8
+        return byte_index, bit_index
+
+    def _set_byte_and_bit_index(self, index: int, value: BitT|bool):
+        """ Helper functions for setter """ 
+        
+        byte_idx, bit_idx = self._get_byte_and_bit_index(index)
+        if value:
+            self._data[byte_idx] |= (1 << bit_idx)
+        else:
+            self._data[byte_idx] &= ~(1 << bit_idx)
+
+    ### Type check consistency
+    @overload
+    def __getitem__(self, index: int) -> bool: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> CompactBoolList: ...
+
+    # Actual  function signature
+    def __getitem__(self, index: int|slice) -> bool|CompactBoolList: 
+        # --- Slice Handling  ---
+        if isinstance(index, slice):
+            start, stop, step = index.indices(self._length)
+            return self.__class__([self[i] for i in range(start, stop, step)])
+
+        # --- Integer Handling ---
+        # Boundary check for index
+        if not (-self._length <= index < self._length):
+             raise IndexError("Index out of range")
+        
+        byte_idx, bit_idx = self._get_byte_and_bit_index(index)
+        mask = 1 << bit_idx
+        return (self._data[byte_idx] & mask) != 0    
+
+    def __setitem__(self, index: int, value: BitT|bool):
+        # Boundary check for index
+        if not (-self._length <= index < self._length):
+             raise IndexError("Index out of range")
+
+        self._set_byte_and_bit_index(index, value)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> bool:
+        if self._index < self._length:
+            value = self.__getitem__(self._index)
+            self._index += 1
+            return value
+        else:
+            self._index = 0
+            raise StopIteration
+
+    def append(self, value: BitT|bool):
+        if self._length % 8 == 0:
+            self._data.append(0)
+        
+        self._set_byte_and_bit_index(self._length, value)            
+        self._length += 1
+
+    def __repr__(self) -> str:
+        list_representation = list(self) 
+        return f"{self.__class__.__name__}({list_representation!r})"
+
+    ############## Custom methods ##############
+    def to_list(self) -> list[bool]:
+        """Converts to a standard list[bool] for functions expecting it."""
+        return list(self)
 
 def log_2(n: int) -> int:
     """

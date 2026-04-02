@@ -9,7 +9,7 @@ from __future__ import annotations
 __all__ = ['Trevisan']
 
 from cryptomite import _cryptomite
-
+from cryptomite.utils import CompactBoolList
 
 class Trevisan:
     """
@@ -31,7 +31,7 @@ class Trevisan:
         self.config = _cryptomite.TrevisanConfig(n, k, error)
         self.ext = _cryptomite.Trevisan(self.config)
 
-    def extract(self, input1: list[bool], input2: list[bool]) -> list[bool]:
+    def extract(self, input1: CompactBoolList, input2: CompactBoolList) -> CompactBoolList:
         """
         Extract randomness.
 
@@ -50,7 +50,7 @@ class Trevisan:
         self.ext.load_source(input1, input2)
 
         m = self.config.m
-        bits = []
+        bits = CompactBoolList()
         for i in range(m):
             bit = self.ext.extract_bit(i)
             bits.append(bit)
