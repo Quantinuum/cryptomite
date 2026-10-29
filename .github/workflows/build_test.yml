@@ -12,7 +12,8 @@ env:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    # Keep older supported Python versions available on the runner.
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         python-version: [ 3.9, "3.10", 3.11, 3.12 ]
