@@ -3,6 +3,15 @@ on:
   push:
     branches:
       - 'build-wheel'
+  pull_request:
+    paths:
+      - 'setup.cfg'
+      - '.github/workflows/wheels.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   build_linux_wheels:
     name: build linux wheels
@@ -10,10 +19,12 @@ jobs:
     env:
       PY_VERS: cp38-cp38 cp39-cp39 cp310-cp310 cp311-cp311 cp312-cp312
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5
+      with:
+        persist-credentials: false
     - name: set up container
       run: |
-        docker create --name linux_build -i -v /:/host quay.io/pypa/manylinux2014_x86_64:latest /bin/bash
+        docker create --name linux_build -i quay.io/pypa/manylinux2014_x86_64:latest /bin/bash
         docker cp . linux_build:/cryptomite/
     - name: run build
       run: |
@@ -25,38 +36,42 @@ jobs:
       with:
         name: linux_wheels
         path: wheelhouse/
+        if-no-files-found: error
   build_macos_wheels:
     name: build macos wheels
-    runs-on: macos-13
+    runs-on: macos-15-intel
+    env:
+      MACOSX_DEPLOYMENT_TARGET: '13.0'
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5
+      with:
+        persist-credentials: false
     - name: set up python 3.9
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: '3.9'
     - name: build wheel (3.9)
       run: .github/workflows/macosbuildwheel
     - name: set up python 3.10
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: '3.10'
     - name: build wheel (3.10)
       run: .github/workflows/macosbuildwheel
     - name: set up python 3.11
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: '3.11'
     - name: build wheel (3.11)
       run: .github/workflows/macosbuildwheel
     - name: set up python 3.12
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: '3.12'
     - name: build wheel (3.12)
       run: .github/workflows/macosbuildwheel
-    - uses: actions/checkout@v2
-    - name: set up python '3.13'
-      uses: actions/setup-python@v2
+    - name: set up python 3.13
+      uses: actions/setup-python@v6
       with:
         python-version: '3.13'
     - name: build wheel (3.13)
@@ -65,31 +80,36 @@ jobs:
       with:
         name: macos_wheels
         path: wheelhouse/
+        if-no-files-found: error
   build_macos_m1_wheels:
     name: build macos M1 wheels
-    runs-on: macos-latest-xlarge
+    runs-on: macos-15
+    env:
+      MACOSX_DEPLOYMENT_TARGET: '14.0'
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5
+      with:
+        persist-credentials: false
     - name: set up python 3.10
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: '3.10'
     - name: build wheel (3.10)
       run: .github/workflows/macosbuildwheel
     - name: set up python 3.11
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: '3.11'
     - name: build wheel (3.11)
       run: .github/workflows/macosbuildwheel
     - name: set up python 3.12
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: '3.12'
     - name: build wheel (3.12)
       run: .github/workflows/macosbuildwheel
     - name: set up python 3.13
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: '3.13'
     - name: build wheel (3.13)
@@ -98,13 +118,16 @@ jobs:
       with:
         name: macos_m1_wheels
         path: wheelhouse/
+        if-no-files-found: error
   build_windows_wheels:
     name: build windows wheels
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5
+      with:
+        persist-credentials: false
     - name: set up python 3.8
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: '3.8'
     - name: build wheel (3.8)
@@ -112,7 +135,7 @@ jobs:
         python -m pip install -U pip wheel scikit-build
         python setup.py bdist_wheel -d "${{ github.workspace }}/wheelhouse"
     - name: set up python 3.9
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: '3.9'
     - name: build wheel (3.9)
@@ -120,7 +143,7 @@ jobs:
         python -m pip install -U pip wheel scikit-build
         python setup.py bdist_wheel -d "${{ github.workspace }}/wheelhouse"
     - name: set up python 3.10
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: '3.10'
     - name: build wheel (3.10)
@@ -128,7 +151,7 @@ jobs:
         python -m pip install -U pip wheel scikit-build
         python setup.py bdist_wheel -d "${{ github.workspace }}/wheelhouse"
     - name: set up python 3.11
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: '3.11'
     - name: build wheel (3.11)
@@ -136,7 +159,7 @@ jobs:
         python -m pip install -U pip wheel scikit-build
         python setup.py bdist_wheel -d "${{ github.workspace }}/wheelhouse"
     - name: set up python 3.12
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: '3.12'
     - name: build wheel (3.12)
@@ -144,7 +167,7 @@ jobs:
         python -m pip install -U pip wheel scikit-build
         python setup.py bdist_wheel -d "${{ github.workspace }}/wheelhouse"
     - name: set up python 3.13
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: '3.13'
     - name: build wheel (3.13)
@@ -155,3 +178,4 @@ jobs:
       with:
         name: windows_wheels
         path: wheelhouse/
+        if-no-files-found: error

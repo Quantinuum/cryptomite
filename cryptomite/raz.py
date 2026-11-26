@@ -125,7 +125,7 @@ class Raz:
         assert 0 < len(input2) <= self.n
 
         x1, x2 = input1[0:self.n], input1[self.n:]
-        y = input2 + [0] * (len(input2) - self.n)
+        y = input2 + [0] * (self.n - len(input2))
 
         pad_amount = self.pad_amount
         x1 = x1 + [0]*pad_amount
